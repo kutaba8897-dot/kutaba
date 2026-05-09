@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // PILLAR 0: Global Safety Net
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // PILLAR 3: Global Helpers & Primitives
+    // ==========================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ID Hardening
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Time Hardening
+    function isNow(t) {
+      return t == request.time;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Admin Helper
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'kutaba8897@gmail.com' && request.auth.token.email_verified == true
+      );
+    }
+
+    // ==========================================
+    // PILLAR 2: Validation Blueprints
+    // ==========================================
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['displayName', 'email', 'lastLogin'])
+        && data.keys().size() <= 10
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.email is string && data.email.size() <= 100
+        && data.lastLogin is timestamp;
+    }
+
+    function isValidQuiz(data) {
+      return data.keys().hasAll(['title', 'questions', 'userId', 'createdAt'])
+        && data.keys().size() == 4
+        && data.title is string && data.title.size() <= 500
+        && data.questions is list && data.questions.size() >= 1 && data.questions.size() <= 50
+        && data.userId == request.auth.uid
+        && isNow(data.createdAt);
+    }
+
+    function isValidSubmission(data) {
+      return data.keys().hasAll(['quizId', 'studentId', 'studentName', 'studentEmail', 'score', 'totalQuestions', 'completedAt'])
+        && data.keys().size() == 7
+        && data.quizId is string && data.quizId.size() <= 128
+        && data.studentId == request.auth.uid
+        && data.studentName is string && data.studentName.size() <= 100
+        && data.studentEmail is string && data.studentEmail.size() <= 100
+        && data.score is int && data.score >= 0
+        && data.totalQuestions is int && data.totalQuestions >= 1
+        && data.score <= data.totalQuestions
+        && isNow(data.completedAt);
+    }
+
+    // ==========================================
+    // PILLAR 1 & 8: Resource Matching
+    // ==========================================
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) 
+        && isValidUser(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLogin']);
+    }
+
+    // Quizzes Collection
+    match /quizzes/{quizId} {
+      allow get: if isValidId(quizId); // Students need access to the quiz they are taking
+      
+      // PILLAR 8: Secure List Queries
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      allow create: if isEmailVerified() && isValidQuiz(incoming());
+      
+      allow delete: if (isSignedIn() && existing().userId == request.auth.uid) || isAdmin();
+    }
+
+    // Submissions Collection
+    match /submissions/{submissionId} {
+      // Teachers can see results for their quizzes
+      // Students can see their own results
+      
+      allow get: if isSignedIn() && (
+        existing().studentId == request.auth.uid || 
+        get(/databases/$(database)/documents/quizzes/$(existing().quizId)).data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // PILLAR 8: Secure List Queries
+      allow list: if isSignedIn() && (
+        resource.data.studentId == request.auth.uid || 
+        get(/databases/$(database)/documents/quizzes/$(resource.data.quizId)).data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if isEmailVerified() 
+        && isValidSubmission(incoming())
+        && exists(/databases/$(database)/documents/quizzes/$(incoming().quizId));
+        
+      // No updates or deletes for submissions (Terminal State Locking)
+      allow update, delete: if isAdmin();
+    }
+  }
+}

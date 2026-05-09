@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "Quiz": {
+      "title": "Quiz",
+      "description": "A generated quiz with questions",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": { "type": "string" },
+              "options": { "type": "array", "items": { "type": "string" } },
+              "correctAnswer": { "type": "integer" },
+              "explanation": { "type": "string" }
+            }
+          }
+        },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "questions", "userId", "createdAt"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "Basic user profile information",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      },
+      "required": ["displayName", "email"]
+    },
+    "Submission": {
+      "title": "Quiz Submission",
+      "description": "Recorded result of a student taking a quiz",
+      "type": "object",
+      "properties": {
+        "quizId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "studentEmail": { "type": "string" },
+        "score": { "type": "integer" },
+        "totalQuestions": { "type": "integer" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["quizId", "studentId", "studentName", "studentEmail", "score", "totalQuestions", "completedAt"]
+    }
+  },
+  "firestore": {
+    "/quizzes/{quizId}": {
+      "schema": "Quiz",
+      "description": "Collection of generated quizzes"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User specific data"
+    },
+    "/submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Student results for quizzes"
+    }
+  }
+}
