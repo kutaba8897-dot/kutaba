@@ -11,7 +11,7 @@ import { cn } from './lib/utils';
 
 export default function App() {
   const [view, setView] = useState<'home' | 'quiz' | 'history' | 'submissions'>('home');
-  const [provider, setProvider] = useState<'gemini' | 'deepseek'>('gemini');
+  const [provider, setProvider] = useState<'gemini' | 'deepseek' | 'openai'>('gemini');
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingShared, setIsFetchingShared] = useState(false);
@@ -366,28 +366,43 @@ export default function App() {
         </div>
 
           <nav className="flex-1 px-6 space-y-2">
-            {/* Model Toggle */}
-            <div className="bg-slate-50 p-2 rounded-2xl mb-4 border border-slate-100">
-              <div className="flex p-1 gap-1">
+            {/* Model Selection Label */}
+            <div className="px-4 py-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">محرك الذكاء الاصطناعي</span>
+            </div>
+            
+            {/* Model Toggles - Grid Layout */}
+            <div className="bg-slate-50 p-1.5 rounded-2xl mb-4 border border-slate-100 grid grid-cols-1 gap-1">
                 <button 
                   onClick={() => setProvider('gemini')}
                   className={cn(
-                    "flex-1 py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2",
-                    provider === 'gemini' ? "bg-white text-blue-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                    "w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-3",
+                    provider === 'gemini' ? "bg-white text-blue-600 shadow-sm border border-blue-50" : "text-slate-400 hover:text-slate-600"
                   )}
                 >
+                  <div className={cn("w-2 h-2 rounded-full", provider === 'gemini' ? "bg-blue-600 animate-pulse" : "bg-slate-300")} />
                   Gemini Flash
                 </button>
                 <button 
                   onClick={() => setProvider('deepseek')}
                   className={cn(
-                    "flex-1 py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2",
-                    provider === 'deepseek' ? "bg-white text-blue-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                    "w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-3",
+                    provider === 'deepseek' ? "bg-white text-blue-600 shadow-sm border border-blue-50" : "text-slate-400 hover:text-slate-600"
                   )}
                 >
+                  <div className={cn("w-2 h-2 rounded-full", provider === 'deepseek' ? "bg-blue-600 animate-pulse" : "bg-slate-300")} />
                   DeepSeek R1
                 </button>
-              </div>
+                <button 
+                  onClick={() => setProvider('openai')}
+                  className={cn(
+                    "w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-3",
+                    provider === 'openai' ? "bg-white text-blue-600 shadow-sm border border-blue-50" : "text-slate-400 hover:text-slate-600"
+                  )}
+                >
+                  <div className={cn("w-2 h-2 rounded-full", provider === 'openai' ? "bg-blue-600 animate-pulse" : "bg-slate-300")} />
+                  OpenAI GPT-4o
+                </button>
             </div>
 
           {/* Main Action: Go Full Screen (Independent Platform) */}
@@ -489,53 +504,100 @@ export default function App() {
                 <h3 className="text-2xl font-bold text-slate-900 mb-2">جاري تجهيز الاختبار...</h3>
                 <p className="text-slate-500">يرجى الانتظار قليلاً بينما نقوم باستدعاء البيانات.</p>
               </motion.div>
-            ) : view === 'home' && (
+            ) : view === 'home' ? (
               <motion.div
                 key="home"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="max-w-4xl mx-auto space-y-12"
+                className="max-w-4xl mx-auto space-y-16 py-10"
               >
-                <div className="text-center space-y-4" dir="rtl">
-                  <span className="inline-block px-4 py-1.5 bg-blue-100 text-blue-600 rounded-full text-sm font-bold tracking-wide">مدعوم بالذكاء الاصطناعي</span>
-                  <h2 className="text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">حوّل دروسك إلى تجربة ذكية</h2>
-                  <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-                    ارفع ملفات PDF الخاصة بك، وسيقوم نظامنا بتحليلها فوراً لإنشاء اختبارات تقييمية مخصصة تساعدك على تثبيت المعلومة.
+                <div className="text-center space-y-6" dir="rtl">
+                  <motion.div 
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest border border-blue-100"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    الذكاء الاصطناعي الأفضل للتدريسيين
+                  </motion.div>
+                  <h1 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter">
+                    حوّل دروسك إلى <span className="text-blue-600 relative inline-block">
+                      تجارب ذكية
+                      <svg className="absolute -bottom-2 left-0 w-full h-3 text-blue-100 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        <path d="M0 5 Q 25 0 50 5 T 100 5" fill="none" stroke="currentColor" strokeWidth="8" />
+                      </svg>
+                    </span>
+                  </h1>
+                  <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
+                    منصة EduTransform AI تتيح لك استخراج محتوى تعليمي واختبارات تفاعلية من ملفاتك في ثوانٍ معدودة باستخدام أقوى محركات الذكاء الاصطناعي.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto" dir="rtl">
-                  <StatCard icon={<Clock className="text-orange-500" />} title="ثواني" desc="لإنشاء الاختبار" />
-                  <StatCard icon={<BookOpen className="text-green-500" />} title="+100" desc="نوع محتوى مدعوم" />
-                  <StatCard icon={<Sparkles className="text-blue-500" />} title="99%" desc="دقة تحليل Gemini" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6" dir="rtl">
+                  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all group">
+                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Clock className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <h3 className="font-black text-lg text-slate-900 mb-2">سرعة الإنجاز</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">توليد اختبارات متكاملة خلال ثوانٍ بدلاً من ساعات من العمل اليدوي.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group">
+                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <BookOpen className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <h3 className="font-black text-lg text-slate-900 mb-2">دقة أكاديمية</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">تحليل عميق للمحتوى لضمان جودة وصحة الأسئلة المطروحة.</p>
+                  </div>
+                  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all group">
+                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Sparkles className="w-6 h-6 text-emerald-600" />
+                    </div>
+                    <h3 className="font-black text-lg text-slate-900 mb-2">تعدد النماذج</h3>
+                    <p className="text-sm text-slate-500 leading-relaxed">حرية الاختيار بين Gemini و GPT-4o و DeepSeek للحصول على أفضل النتائج.</p>
+                  </div>
                 </div>
 
-                <FileUploader onUpload={handleUpload} isLoading={isLoading} />
+                <div className="bg-white p-2 rounded-[3rem] border border-slate-100 shadow-2xl shadow-blue-500/10">
+                  <div className="bg-slate-50/50 p-10 rounded-[2.5rem] border border-dashed border-slate-200">
+                    <FileUploader onUpload={handleUpload} isLoading={isLoading} />
+                  </div>
+                </div>
 
-                <div className="mt-12 pt-8 border-t border-slate-200">
-                  <div className="flex flex-col items-center gap-6">
-                    <div className="text-center">
-                      <p className="text-slate-900 font-bold mb-1">هل أنت طالب؟</p>
-                      <p className="text-slate-400 text-sm">أدخل كود الاختبار الذي أرسله لك المعلم</p>
+                <div className="flex flex-col items-center gap-8 pt-10">
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">التكامل مع أقوى الشركات العلمية</p>
+                  <div className="flex flex-wrap justify-center gap-x-12 gap-y-8 grayscale opacity-50 contrast-125">
+                    <span className="font-black text-2xl tracking-tighter text-slate-900">Google Cloud</span>
+                    <span className="font-black text-2xl tracking-tighter text-slate-900">OpenAI</span>
+                    <span className="font-black text-2xl tracking-tighter text-slate-900">DeepSeek</span>
+                  </div>
+                </div>
+
+                <div className="pt-16 border-t border-slate-100">
+                  <div className="bg-blue-600 rounded-[3rem] p-12 relative overflow-hidden text-center md:text-right space-y-6 md:flex items-center justify-between gap-10">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/20 rounded-full -ml-32 -mb-32 blur-3xl" />
+                    
+                    <div className="relative z-10 space-y-4 max-w-xl" dir="rtl">
+                      <h3 className="text-3xl font-black text-white">هل استلمت كود اختبار من تدريسي؟</h3>
+                      <p className="text-blue-100 text-lg">أدخل الكود لتجربة اختبارك التفاعلي الآن والبدء في رحلة التعلم.</p>
                     </div>
-                    <div className="flex gap-2 w-full max-w-md">
-                       <button 
+
+                    <div className="relative z-10 w-full md:w-auto">
+                      <button 
                          onClick={() => {
                            const code = prompt("أدخل كود الاختبار (عدة حروف وأرقام):");
                            if (code && code.trim()) loadSharedQuiz(code.trim());
                          }}
-                         className="flex-1 px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-black hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm flex items-center justify-center gap-3"
-                       >
-                         <Copy className="w-5 h-5" /> أدخل الكود يدوياً
-                       </button>
+                         className="w-full md:w-auto px-10 py-5 bg-white text-blue-600 rounded-2xl font-black text-lg hover:bg-blue-50 transition-all shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3 active:scale-95"
+                      >
+                         <Send className="w-6 h-6" /> أدخل كود الاختبار الآن
+                      </button>
                     </div>
                   </div>
                 </div>
               </motion.div>
-            )}
-
-            {view === 'quiz' && quiz && (
+            ) : view === 'quiz' && quiz && (
               <motion.div
                 key="quiz"
                 initial={{ opacity: 0, scale: 0.95 }}

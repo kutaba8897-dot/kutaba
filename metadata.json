@@ -1,6 +1,6 @@
 {
-  "name": "Remix: EduTransform AI",
-  "description": "منصة ذكية للتحول التعليمي الرقمي: تحويل المواد الدراسية و ملفات PDF إلى اختبارات تفاعلية باستخدام الذكاء الاصطناعي.",
+  "name": "EduTransform AI",
+  "description": "المنصة المتكاملة للتدريسيين: حوّل محاضراتك وملفاتك إلى اختبارات ذكية وتجارب تعليمية تفاعلية باستخدام Gemini و GPT-4o و DeepSeek.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

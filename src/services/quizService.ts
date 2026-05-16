@@ -14,23 +14,22 @@ export interface Quiz {
   questions: QuizQuestion[];
 }
 
-export async function generateQuizFromText(text: string, count: number = 10, provider: 'gemini' | 'deepseek' = 'gemini'): Promise<Quiz> {
-  if (provider === 'deepseek') {
+export async function generateQuizFromText(text: string, count: number = 10, provider: 'gemini' | 'deepseek' | 'openai' = 'gemini'): Promise<Quiz> {
+  if (provider === 'deepseek' || provider === 'openai') {
     try {
       const response = await fetch('/api/generate-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, count })
+        body: JSON.stringify({ text, count, provider })
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "فشل طلب DeepSeek");
+        throw new Error(error.error || `فشل طلب ${provider}`);
       }
       return await response.json();
     } catch (err: any) {
-      console.error("DeepSeek Client Error:", err);
-      // Fallback to gemini if deepseek fails? Or just throw?
-      throw new Error("عذراً، فشل استخدام DeepSeek. تأكد من إعداد مفتاح API الخاص بك.");
+      console.error(`${provider} Client Error:`, err);
+      throw new Error(`عذراً، فشل استخدام ${provider}. تأكد من إعداد مفتاح API الخاص بك.`);
     }
   }
 
